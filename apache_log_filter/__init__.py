@@ -10,6 +10,7 @@ APACHE_DEFAULT_LOG_FORMAT = '%h %l %u %t "%r" %>s %b'
 logger = logging.getLogger(__name__)
 logger.info("Importing {}".format(__name__))
 
+# noinspection PyPep8Naming
 class ApacheLogFilter:
     """Iterator over Apache log files applying some filters.
        Returns the parsed fields as a dictionary, see apache_log_parser
@@ -122,7 +123,7 @@ class ApacheLogFilter:
             except LineDoesntMatchException:
                 logger.debug("Skipped, not matching the format_string({}).".format(self.format_string))
                 return False
-            if result == False:
+            if not result:
                 logger.debug("Line skipped.")
                 return False                # skip if filter doesn't match
             if type(result) == dict:
@@ -131,20 +132,23 @@ class ApacheLogFilter:
         logger.debug("Line matched.")
         return True # TODO return the last state of line here and get rid of the returnHandlers all over
 
-    def ignore_bots(self, line):
+    @staticmethod
+    def ignore_bots(line):
         """Returns False if User Agent is identified as a bot."""
         logger.debug("Checking for bots: {}".format(BOTS.__str__))
         logger.debug("against: {}".format(line['request_header_user_agent']))
         logger.debug("Returns: {}".format(bool(BOTS.search(line['request_header_user_agent']))))
         return not bool(BOTS.search(line['request_header_user_agent']))
 
-    def ignore_query(self, line):
+    @staticmethod
+    def ignore_query(line):
         """Returns the URL without any query string."""
         result = line
         result.update({ 'request_url' : line['request_url'].split('?')[0] })
         return result
 
-    def unquote_url(self, line):
+    @staticmethod
+    def unquote_url(line):
         """Returns a normalized URL"""
         result = line
         result.update({'request_url': ul_unquote(line['request_url']

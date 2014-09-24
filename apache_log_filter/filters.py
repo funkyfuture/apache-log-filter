@@ -5,6 +5,7 @@ import re
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyPep8Naming
 class DictFilter(dict):
     def __init__(self, arg={}):
         super().__init__(arg)
@@ -13,7 +14,7 @@ class DictFilter(dict):
 
     def __setitem__(self, *args, **kwargs):
         super().__setitem__(args, kwargs)
-        self._updateKeyIndex
+        self._updateKeyIndex()
 
     def __eq__(self, value):
         for key in value.keys() & self.re_keys:
@@ -60,6 +61,7 @@ class DictFilter(dict):
         self.update(compiled)
 
 
+# noinspection PyPep8Naming
 class FilterSet(list):
     """A set of filters that will be evaluated in order.
 
@@ -131,22 +133,23 @@ class FilterSet(list):
         if not isinstance(compiled_value, self.type):
             raise ValueError(("{} is not a valid filter-type; " +
                   "expecting a {}.").format(type(compiled_value), self.type))
-        return (value[0], compiled_value)
+        return value[0], compiled_value
 
     def __compileFilter(self, arg):
         raise NotImplementedError("A subclass of FilterSet must implement a _compileFilter method.")
-        return arg
 
     def test(self, rule, line):
         raise NotImplementedError("A subclass of FilterSet must implement a test method.")
 
 
+# noinspection PyPep8Naming
 class RegExFilterSet(FilterSet):
 
     def _setType(self):
         self.type = type(re.compile(''))
 
-    def _compileFilter(self, value):
+    @staticmethod
+    def _compileFilter(value):
         if isinstance(value, str):
             value = re.compile(value)
         return value
@@ -157,12 +160,14 @@ class RegExFilterSet(FilterSet):
         return rule.search(line)
 
 
+# noinspection PyPep8Naming
 class DictFilterSet(FilterSet):
 
     def _setType(self):
         self.type = DictFilter
 
-    def _compileFilter(self, value):
+    @staticmethod
+    def _compileFilter(value):
         if not isinstance(value, DictFilter):
             value = DictFilter(value)
         value._compile()

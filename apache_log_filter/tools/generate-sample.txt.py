@@ -45,6 +45,7 @@ for file in files:
     with open(file, 'rt') as f:
         for line in f:
             counter += 1
+            # noinspection PyBroadException
             try:
                 #print(line.rstrip()) #DEBUG statement
                 ua = parser.parse(line.rstrip())['request_header_user_agent']

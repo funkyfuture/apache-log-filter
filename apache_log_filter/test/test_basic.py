@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 import logging
@@ -19,6 +20,7 @@ from apache_log_filter import ApacheLogFilter
 from apache_log_filter.filters import DictFilter, DictFilterSet, RegExFilterSet
 
 
+# noinspection PyClassHasNoInit,PyPep8Naming
 class SimpleLogFile():
     def setUp(self):
         number_of_test_log_files = 4
@@ -32,6 +34,7 @@ class SimpleLogFile():
 
 
         self.files = []
+        # noinspection PyUnusedLocal
         for i in range(0, number_of_test_log_files):
             self.files.append(tempfile.mkstemp(suffix='.log',
                                             prefix='apache_log_filter_')[1])
@@ -102,6 +105,7 @@ class SimplePreFilterTest(SimpleLogFile, unittest.TestCase):
         self.assertEqual(self.valid_lines, counter)
 
 
+# noinspection PyPep8Naming
 class SimpleIgnoreBotFilter(SimpleLogFile, unittest.TestCase):
     #@unittest.skip("")
     def test_ignorebots(self):

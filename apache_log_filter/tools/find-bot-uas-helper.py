@@ -24,6 +24,7 @@ VALIDS_FILE = apache_log_filter.tools.valids.__file__
 ##
 
 
+# noinspection PyShadowingNames,PyBroadException
 def find_unknown(path):
     if not path or path == BOTS_FILE:
         try:

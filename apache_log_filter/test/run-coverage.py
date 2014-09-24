@@ -2,7 +2,7 @@
 
 from glob import glob
 import os
-from subprocess import call
+from subprocess import call, STDOUT
 from webbrowser import open_new_tab
 
 wd = os.path.dirname(__file__)
