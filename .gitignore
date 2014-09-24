@@ -1,3 +1,6 @@
+#Backups
+*~
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -34,6 +37,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
+*/.testOutput/
 .tox/
 .coverage
 .cache
@@ -52,3 +56,12 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Eric IDE
+.*e4p
+.eric5project/
+.issues/
+.ropeproject/
+
+# PyCharm
+.idea/
