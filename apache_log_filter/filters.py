@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 class DictFilter(dict):
     def __init__(self, arg={}):
         super().__init__(arg)
-        self.lt_keys, self.gt_keys, self.re_keys = ([], [], [])
+        self.lt_keys, self.le_keys, self.gt_keys, self.ge_keys, self.re_keys \
+            = [], [], [], [], []
         self._updateKeyIndex()
 
     def __setitem__(self, *args, **kwargs):
@@ -22,11 +23,19 @@ class DictFilter(dict):
                 return False
 
         for key in value.keys() & self.lt_keys:
-            if not self[key] < value[key]:
+            if self['lt_'+key] < value[key]:
+                return False
+
+        for key in value.keys() & self.le_keys:
+            if self['le_'+key] < value[key] and self['le_'+key] != value[key]:
                 return False
 
         for key in value.keys() & self.gt_keys:
-            if not self[key] > value[key]:
+            if self['gt_'+key] > value[key]:
+                return False
+
+        for key in value.keys() & self.ge_keys:
+            if self['ge_'+key] > value[key] and self['ge_'+key] != value[key]:
                 return False
 
         return True
@@ -41,21 +50,27 @@ class DictFilter(dict):
 
     def _updateKeyIndex(self):
         #TODO also call after item deletion
-        for index in [ self.lt_keys, self.gt_keys, self.re_keys ]:
+        for index in [self.lt_keys, self.le_keys,
+                      self.gt_keys, self.ge_keys, self.re_keys]:
             index.clear()
 
         for key in self.keys():
             if key.startswith('lt_'):
-                self.lt_keys.append(key)
+                self.lt_keys.append(key[3:])
+            elif key.startswith('le_'):
+                self.le_keys.append(key[3:])
             elif key.startswith('gt_'):
-                self.gt_keys.append(key)
+                self.gt_keys.append(key[3:])
+            elif key.startswith('ge_'):
+                self.ge_keys.append(key[3:])
             else:
                 self.re_keys.append(key)
 
     def _compile(self):
         compiled = {}
         for key, value in self.items():
-            if not (key.startswith('lt_') or key.startswith('gt_')) \
+            if not (key.startswith('lt_') or key.startswith('le_') \
+                    or key.startswith('gt_') or key.startswith('ge_') ) \
                and isinstance(value, str):
                    compiled[key] = re.compile(value)
         self.update(compiled)

@@ -11,6 +11,7 @@ logging.basicConfig(filename=log_filename, level=LOG_LEVEL, style='{',
                     format='[{name}] {levelname}: {message}')
 logger = logging.getLogger(__name__)
 
+from datetime import datetime
 import tempfile
 import random
 import re
@@ -28,9 +29,9 @@ class SimpleLogFile():
 
         self.format_string = '%h <<%P>> %t %Dus \"%r\" %>s %b  \"%{Referer}i\" \"%{User-Agent}i\" %l %u'
         self.valid_logline = '127.0.0.1 <<6113>> [16/Aug/2013:15:45:34 +0000] 1966093us "GET / HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.18)" - -'
-        self.invalid_loglines = [ '127.0.0.1 <<6113>> [16/Aug/2013:15:45:34 +0000] 1966093us "GET /login HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.18)" - -',
-                                 '127.0.0.1 <<6113>> [16/Aug/2013:15:45:34 +0000] 1966093us "GET /login?redirect=no HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.18)" - -',
-                                  '127.0.0.1 <<6113>> [16/Aug/2013:15:45:34 +0000] 1966093us "GET / HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" - -' ]
+        self.invalid_loglines = [ '127.0.0.1 <<6113>> [17/Aug/2013:15:45:34 +0000] 1966093us "GET /login HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.18)" - -',
+                                  '127.0.0.1 <<6113>> [18/Aug/2013:15:45:34 +0000] 1966093us "GET /login?redirect=no HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.18)" - -',
+                                  '127.0.0.1 <<6113>> [19/Aug/2013:15:45:34 +0000] 1966093us "GET / HTTP/1.1" 200 3478  "https://example.com/" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" - -' ]
 
 
         self.files = []
@@ -70,7 +71,6 @@ class SimpleDictFilterTest(SimpleLogFile, unittest.TestCase):
             test_dictfilters.append((True, DictFilter({ key: value })))
         test_dictfilters.append((True, test_dict))
         test_dictfilters.append((False, DictFilter({'request_url': re.compile('/login')})))
-        #TODO test gt_, lt_
         random.shuffle(test_dictfilters)
 
         test_filter = ApacheLogFilter(files = self.files,
@@ -116,6 +116,56 @@ class SimpleIgnoreBotFilter(SimpleLogFile, unittest.TestCase):
                           ignoreBots = True,
                           returnType = str)
 
+        counter = 0
+        for result in test_filter:
+            self.assertEqual(self.valid_logline, result.rstrip())
+            counter += 1
+        self.assertEqual(self.valid_lines, counter)
+
+
+class SimpleComparisonFilterTest(SimpleLogFile, unittest.TestCase):
+    def test_lt_comparison(self):
+        test_dictFilter = DictFilterSet([(True, {'lt_time_received_datetimeobj': datetime(2013, 8, 17)})])
+        test_filter = ApacheLogFilter(files = self.files,
+                                  format_string = self.format_string,
+                                  dictFilters = test_dictFilter,
+                                  returnType = str)
+        counter = 0
+        for result in test_filter:
+            self.assertEqual(self.valid_logline, result.rstrip())
+            counter += 1
+        self.assertEqual(self.valid_lines, counter)
+
+    def test_le_comparison(self):
+        test_dictFilter = DictFilterSet([(True, {'le_time_received_datetimeobj': datetime(2013, 8, 16, 15, 45, 35)})])
+        test_filter = ApacheLogFilter(files = self.files,
+                                  format_string = self.format_string,
+                                  dictFilters = test_dictFilter,
+                                  returnType = str)
+        counter = 0
+        for result in test_filter:
+            self.assertEqual(self.valid_logline, result.rstrip())
+            counter += 1
+        self.assertEqual(self.valid_lines, counter)
+
+    def test_gt_comparison(self):
+        test_dictFilter = DictFilterSet([(False, {'gt_time_received_datetimeobj': datetime(2013, 8, 16, 23, 59, 59)})])
+        test_filter = ApacheLogFilter(files = self.files,
+                                  format_string = self.format_string,
+                                  dictFilters = test_dictFilter,
+                                  returnType = str)
+        counter = 0
+        for result in test_filter:
+            self.assertEqual(self.valid_logline, result.rstrip())
+            counter += 1
+        self.assertEqual(self.valid_lines, counter)
+
+    def test_ge_comparison(self):
+        test_dictFilter = DictFilterSet([(False, {'ge_time_received_datetimeobj': datetime(2013, 8, 17, 15, 45, 34)})])
+        test_filter = ApacheLogFilter(files = self.files,
+                                  format_string = self.format_string,
+                                  dictFilters = test_dictFilter,
+                                  returnType = str)
         counter = 0
         for result in test_filter:
             self.assertEqual(self.valid_logline, result.rstrip())
